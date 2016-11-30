@@ -1,0 +1,50 @@
+{% extends "main.html" %}
+{% block content %}
+{% include "header.html" %}
+    <div class="row divider blue">
+        <div class="col-md-12"></div>
+    </div>
+    <div class="row banner main">
+        <div class="col-md-1"></div>
+        <div class="col-md-11 padding-small">
+            <h1>Catalog App</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-1"></div>
+        <div class = 'col-md-10 flash'>
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+
+                <ul>
+                {% for message in messages %}
+                    <li> <strong> {{ message }} </strong> </li>
+                {% endfor %}
+                </ul>
+                {% endif %}
+            {% endwith %}
+
+        </div>
+        <div class="col-md-1"></div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-1"></div>
+        <div class="col-md-11">
+            <h2>{{item.title}}</h2>
+            <p>
+            {{item.description}}
+            </p>
+            {% if owner %}
+                <a href="{{ url_for('editItem', category_name = category_name,
+                                    item_title = item.title) }}">
+                    Edit</a> |
+                    <a href="{{ url_for('deleteItem', category_name = category_name,
+                                    item_title = item.title) }}">
+                    Delete</a>
+            {% endif %}
+        </div>
+        <div class="col-md-1"></div>
+    </div>
+{% endblock %}

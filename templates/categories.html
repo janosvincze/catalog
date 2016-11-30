@@ -1,0 +1,95 @@
+{% extends "main.html" %}
+{% block content %}
+{% include "header.html" %}
+    <div class="row divider blue">
+        <div class="col-md-12"></div>
+    </div>
+    <div class="row banner main">
+        <div class="col-md-1"></div>
+        <div class="col-md-11 padding-small">
+            <h1>Catalog App</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-1"></div>
+        <div class = 'col-md-10 flash'>
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+
+                <ul>
+                {% for message in messages %}
+                    <li> <strong> {{ message }} </strong> </li>
+                {% endfor %}
+                </ul>
+                {% endif %}
+            {% endwith %}
+
+        </div>
+        <div class="col-md-1"></div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-1"></div>
+        <div class="col-md-4">
+            <h2>Categories</h2>
+            {%if 'username' in session %}
+            <p> <a href="{{ url_for('newCategory') }}">
+                Add new category</a> </p>
+            {% endif %}
+        </div>
+        <div class="col-md-1"></div>
+        <div class="col-md-5">
+            <h2>Latest Items</h2>
+            {%if 'username' in session %}
+            <p> <a href="{{ url_for('newItem') }}">
+                Add new item</a> </p>
+            {% endif %}
+        </div>
+        <div class="col-md-1"></div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-1"></div>
+        <div class="col-md-4">
+        {% for category in categories %}
+            <div class="category-row">
+            <div class="category-left">
+                <a href = "{{url_for('showCategoryItems',
+                            category_name = category.name)}}">
+                        <p>{{category.name}}</p>
+                </a>
+            </div>
+            <div class="category-right">
+                {%if (('email' in session) and
+                        (session['email'] == category.user.email)) %}
+                    <a href="{{ url_for('editCategory',
+                                category_name = category.name) }}">
+                    Edit</a> |
+                    <a href="{{ url_for('deleteCategory',
+                                category_name = category.name) }}">Delete</a>
+                {% endif %}
+            </div>
+            </div>
+        {% endfor %}
+        </div>
+
+        <div class="col-md-1"></div>
+        <div class="col-md-5">
+            {% for item in items %}
+                <a href = "{{url_for('showItem',
+                            category_name=item.category.name,
+                            item_title=item.title)}}">
+                    <div>
+                        <div class="category-item">
+                        {{item.title}}
+                            <div class="category-description">
+                                ({{item.description}})
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+        <div class="col-md-1"></div>
+    </div>
+{% endblock %}

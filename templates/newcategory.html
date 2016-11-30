@@ -1,0 +1,41 @@
+{% extends "main.html" %}
+{% block content %}
+{% include "header.html" %}
+    <div class="row divider blue">
+        <div class="col-md-12"></div>
+    </div>
+    <div class="row banner main">
+        <div class="col-md-1"></div>
+            <div class="col-md-11 padding-small">
+            <h1>New Category</h1>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6 col-md-offset-1 padding-top">
+            <form action="#" method = "post">
+                <div class="form-group">
+                <label for="name">Name:</label>
+                <input type ="text" class="form-control" maxlength="100"
+                    name="name"
+                    {% if category is defined %}
+                    value="{{category.name}}"
+                    {% endif %}
+                    >
+                <div class="padding-bottom"></div>
+                <button type="submit" class="btn btn-default" id="submit" type="submit">
+                <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+                {% if category is defined %}
+                    Update
+                {% else %}
+                    Create
+                {% endif %}
+                </button>
+                </div>
+            </form>
+            <form action="{{ url_for('showCategories')}}" method = 'get'>
+                <input type='submit' class="btn btn-default" value = 'Cancel'>
+            </form>
+        </div>
+    </div>
+{% endblock %}
