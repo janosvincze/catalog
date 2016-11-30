@@ -316,10 +316,9 @@ def disconnect():
 
 # JSON APIs to view Category and Item Information
 @app.route('/catalog.json')
-def restaurantMenuJSON(category_name):
-    category = db_session.query(Category).filter_by(id=category_name).one()
-    items = db_session.query(CategoryItem).filter_by(cat_id=category.id).all()
-    return jsonify(CategoryItems=[i.serialize for i in items])
+def CatalogJSON():
+    category = db_session.query(Category).all()
+    return jsonify(categories=[cat.serialize for cat in category])
 
 
 # Show all categories
