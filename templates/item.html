@@ -40,7 +40,8 @@
                 <a href="{{ url_for('editItem', category_name = category_name,
                                     item_title = item.title) }}">
                     Edit</a> |
-                    <a href="{{ url_for('deleteItem', category_name = category_name,
+                    <a href="{{ url_for('deleteItem',
+                                    category_name = category_name,
                                     item_title = item.title) }}">
                     Delete</a>
             {% endif %}

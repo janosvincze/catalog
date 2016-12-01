@@ -76,10 +76,14 @@
         <div class="col-md-1"></div>
         <div class="col-md-5">
             {% for item in items %}
-                <a href = "{{url_for('showItem', category_name = category.name, item_title = item.title)}}">
+                <a href = "{{url_for('showItem', category_name = category.name,
+                                                 item_title = item.title)}}">
                     <div>
                         <div class="category-item">
-                        {{item.title}}<div class="category-description">({{item.description}})</div>
+                            {{item.title}}
+                            <div class="category-description">
+                                ({{item.description}})
+                            </div>
                         </div>
                     </div>
                 </a>

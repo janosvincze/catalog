@@ -7,11 +7,18 @@
     <div class="row banner main">
         <div class="col-md-1"></div>
             <div class="col-md-11 padding-small">
-            <h1>New Item</h1>
+            <h1>
+            {% if (item is defined) %}
+                Edit Item
+            {% else %}
+                New Item
+            {% endif %}
+            </h1>
             </div>
         </div>
     </div>
     <div class="row">
+        <div class="col-md-1"></div>
         <div class="col-md-6 col-md-offset-1 padding-top">
             <form action="#" method = "post">
                 <div class="form-group">
@@ -33,7 +40,8 @@
                 <select class="form-control" maxlength="100" name="cat_id">
                     {% for category in categories %}
                         <option value="{{category.id}}"
-                        {% if (item is defined) and (item.cat_id == category.id) %}
+                        {% if (item is defined) and
+                              (item.cat_id == category.id) %}
                             selected
                         {% endif %}
                         >
@@ -42,7 +50,8 @@
                     {% endfor %}
                 </select>
                 <div class="padding-bottom"></div>
-                <button type="submit" class="btn btn-default" id="submit" type="submit">
+                <button type="submit" class="btn btn-default"
+                        id="submit" type="submit">
                 <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
                 {% if item is defined %}
                     Update

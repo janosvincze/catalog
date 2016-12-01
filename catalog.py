@@ -5,6 +5,7 @@ from flask import make_response
 
 from sqlalchemy import create_engine, asc, desc, and_
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm.exc import NoResultFound
 from database_setup import Base, Category, CategoryItem, User
 
 from oauth2client.client import flow_from_clientsecrets
@@ -18,6 +19,9 @@ import httplib2
 
 app = Flask(__name__)
 
+# Loading json file to use to configure a client object
+# This client_secret.json file should you edit, or replace
+# your own one from Google Credentials page
 CLIENT_ID = json.loads(
     open('client_secrets.json', 'r').read())['web']['client_id']
 APPLICATION_NAME = "Catalog App"
@@ -32,18 +36,27 @@ db_session = DBSession()
 
 
 def createUser(login_session):
+    """Create a user from login_session
+    Returning user's ID
+    """
     newUser = User(name=login_session['username'],
                    email=login_session['email'],
                    picture=login_session['picture'])
     db_session.add(newUser)
     db_session.commit()
     flash('New user added!')
-    user = db_session.query(User).filter_by(
-                email=login_session['email']).one()
+    try:
+        user = db_session.query(User).filter_by(
+                    email=login_session['email']).one()
+    except NoResultFound:
+        flash('There went something wrong! Not found the user!')
+        return None
     return user.id
 
 
 def getUserId(email):
+    """Returning user's ID from email address
+    """
     try:
         user = db_session.query(User).filter_by(
                 email=email).one()
@@ -53,19 +66,28 @@ def getUserId(email):
 
 
 def getUserInfo(user_id):
-    print user_id
-    user = db_session.query(User).filter_by(id=user_id).one()
-    return user
+    """Returning User object
+    """
+    try:
+        user = db_session.query(User).filter_by(id=user_id).one()
+        return user
+    except:
+        return None
 
 
 @app.route('/clearSession')
 def clearSession():
+    """Clear login session
+    Just for developing, testing
+    """
     login_session.clear()
     return "Session cleared"
 
 
 @app.route('/login')
 def showLogin():
+    """Login page
+    """
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
                     for x in xrange(32))
     login_session['state'] = state
@@ -74,6 +96,8 @@ def showLogin():
 
 @app.route('/fbconnect', methods=['POST'])
 def fbconnect():
+    """Login with Facebook's authentication
+    """
     if request.args.get('state') != login_session['state']:
         response = make_response(json.dumps('Invalid state parameter.'), 401)
         response.headers['Content-Type'] = 'application/json'
@@ -81,6 +105,7 @@ def fbconnect():
     access_token = request.data
     print "access token received %s " % access_token
 
+    # Loading json file, this one should you edit or replace your own one
     app_id = json.loads(open('fb_client_secrets.json', 'r').read())[
         'web']['app_id']
     app_secret = json.loads(
@@ -144,6 +169,8 @@ def fbconnect():
 
 @app.route('/fbdisconnect')
 def fbdisconnect():
+    """Disconnecting user, who connected with Facebook's authentication
+    """
     facebook_id = login_session['facebook_id']
     # The access token must me included to successfully logout
     access_token = login_session['access_token']
@@ -156,6 +183,8 @@ def fbdisconnect():
 
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
+    """Login with Google's authentication
+    """
     # Validate state token
     print "1. Validate state token"
     if request.args.get('state') != login_session['state']:
@@ -165,7 +194,7 @@ def gconnect():
     # Obtain authorization code
     code = request.data
 
-    print "2. Upgrade the authorization code into a credentials object"
+    # print "2. Upgrade the authorization code into a credentials object"
     try:
         # Upgrade the authorization code into a credentials object
         oauth_flow = flow_from_clientsecrets('client_secrets.json', scope='')
@@ -177,7 +206,7 @@ def gconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
 
-    print "3. Check that the access token is valid."
+    # print "3. Check that the access token is valid."
     # Check that the access token is valid.
     access_token = credentials.access_token
     url = ('https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=%s'
@@ -253,6 +282,8 @@ def gconnect():
 
 @app.route('/gdisconnect')
 def gdisconnect():
+    """Disconnecting user, who connected with Google's authentication
+    """
     print login_session.keys()
     credentials = login_session.get('credentials')
     print 'In gdisconnect access token is %s', credentials.access_token
@@ -289,9 +320,10 @@ def gdisconnect():
         return response
 
 
-# Disconnect based on provider
 @app.route('/disconnect')
 def disconnect():
+    """Disconnecting user based on provider
+    """
     if 'provider' in login_session:
         if login_session['provider'] == 'google':
             gdisconnect()
@@ -314,17 +346,19 @@ def disconnect():
         return redirect(url_for('showCategories'))
 
 
-# JSON APIs to view Category and Item Information
 @app.route('/catalog.json')
 def CatalogJSON():
+    """Generating json file containing categories and their items
+    """
     category = db_session.query(Category).all()
     return jsonify(categories=[cat.serialize for cat in category])
 
 
-# Show all categories
 @app.route('/')
 @app.route('/catalog/')
 def showCategories():
+    """Show all categories
+    """
     categories = db_session.query(Category).order_by(asc(Category.name))
     last_items = db_session.query(CategoryItem).order_by(
                     desc(CategoryItem.id)).limit(10)
@@ -333,9 +367,11 @@ def showCategories():
                            items=last_items)
 
 
-# Create a new category
 @app.route('/catalog/new/', methods=['GET', 'POST'])
 def newCategory():
+    """Create a new category
+    """
+    # Checking the user is logged on
     if 'username' not in login_session:
         return redirect('/login')
     if request.method == 'POST':
@@ -349,65 +385,103 @@ def newCategory():
         return render_template('newcategory.html')
 
 
-# Edit a category
 @app.route('/catalog/edit/<category_name>', methods=['GET', 'POST'])
 def editCategory(category_name):
+    """Edit a category
+    """
+    # Checking the user is logged on
     if 'username' not in login_session:
         return redirect('/login')
-    editedCategory = db_session.query(Category).filter_by(
-                        name=category_name).one()
+    # Retrieve Category object, and redirecting if not found
+    try:
+        editedCategory = db_session.query(Category).filter_by(
+                            name=category_name).one()
+    except NoResultFound:
+        flash('There went something wrong' +
+              ', %s category not exits!' % category_name)
+        return redirect(url_for('showCategories'))
+    # Checking user owning the category, if not redirecting
     if getUserId(login_session['email']) != editedCategory.user_id:
         flash('You are not authorized to edit!')
         return redirect(url_for('showCategories'))
     if request.method == 'POST':
+        # Assigning the new name value to the category
         if request.form['name']:
             editedCategory.name = request.form['name']
             flash('Category Successfully Edited %s' % editedCategory.name)
             return redirect(url_for('showCategories'))
     else:
+        # Using the newcategory.html to edit the category
         return render_template('newcategory.html', category=editedCategory)
 
 
-# Delete a category
 @app.route('/catalog/<category_name>/delete/', methods=['GET', 'POST'])
 def deleteCategory(category_name):
+    """Delete a category
+    """
+    # Checking the user is logged on
     if 'username' not in login_session:
         return redirect('/login')
-    categoryToDelete = db_session.query(Category).filter_by(
+    # Retrieve Category object, and redirecting if not found
+    try:
+        categoryToDelete = db_session.query(Category).filter_by(
                         name=category_name).one()
+    except NoResultFound:
+        flash('There went something wrong' +
+              ', %s category not exits!' % category_name)
+        return redirect(url_for('showCategories'))
+    # Checking user owning the category, if not redirecting
     if getUserId(login_session['email']) != categoryToDelete.user_id:
         flash('You are not authorized to delete this category!')
         return redirect(url_for('showCategories'))
     if request.method == 'POST':
+        # Deleting the category
         db_session.delete(categoryToDelete)
         flash('%s Successfully Deleted' % categoryToDelete.name)
         db_session.commit()
         return redirect(url_for('showCategories'))
     else:
+        # Rendering the confirmation page
         return render_template('deletecategory.html',
                                category=categoryToDelete)
 
 
-# Show a items of a category
 @app.route('/catalog/<category_name>/items')
 def showCategoryItems(category_name):
-    categories = db_session.query(Category).order_by(asc(Category.name)).all()
-    category = db_session.query(Category).filter_by(name=category_name).one()
-    items = db_session.query(CategoryItem).filter_by(cat_id=category.id).all()
-
+    """Show a items of a category
+    """
+    # Retrieve Category and items objects, and redirecting if anyone not found
+    try:
+        categories = db_session.query(Category).order_by(
+                                    asc(Category.name)).all()
+        category = db_session.query(Category).filter_by(
+                                    name=category_name).one()
+        items = db_session.query(CategoryItem).filter_by(
+                                    cat_id=category.id).all()
+    except NoResultFound:
+        flash('There went something wrong, cannot display your request!!')
+        return redirect(url_for('showCategories'))
     return render_template('categoryitems.html',
                            items=items,
                            categories=categories,
                            category=category)
 
 
-# Show an item
 @app.route('/catalog/<category_name>/item/<item_title>')
 def showItem(category_name, item_title):
-    category = db_session.query(Category).filter_by(name=category_name).one()
-    item = db_session.query(CategoryItem).filter(
-                        and_(CategoryItem.title == item_title,
-                             CategoryItem.cat_id == category.id)).one()
+    """Show an item
+    """
+    # Retrieve Category and Item objects, and redirecting if anyone not found
+    try:
+        category = db_session.query(Category).filter_by(
+                                name=category_name).one()
+        item = db_session.query(CategoryItem).filter(
+                            and_(CategoryItem.title == item_title,
+                                 CategoryItem.cat_id == category.id)).one()
+    except NoResultFound:
+        flash('There went something wrong, cannot display your request!')
+        return redirect(url_for('showCategories'))
+    # Checking the user is logged on
     if 'username' not in login_session:
         return render_template('item.html',
                                category_name=category_name,
@@ -421,13 +495,16 @@ def showItem(category_name, item_title):
                                        item.user_id)))
 
 
-# Create a new category item
 @app.route('/catalog/new_item/', methods=['GET', 'POST'])
 def newItem():
+    """Create a new category item
+    """
+    # Checking the user is logged on
     if 'username' not in login_session:
         return redirect('/login')
     categories = db_session.query(Category).order_by(asc(Category.name)).all()
     if request.method == 'POST':
+        # Creating the new Item
         cat = db_session.query(Category).filter_by(
                             id=request.form['cat_id']).one()
         newItem = CategoryItem(title=request.form['title'],
@@ -443,23 +520,32 @@ def newItem():
         return render_template('newitem.html', categories=categories)
 
 
-# Edit a menu item
 @app.route('/catalog/<category_name>/item/<item_title>/edit',
            methods=['GET', 'POST'])
 def editItem(category_name, item_title):
+    """Edit a menu item
+    """
+    # Checking the user is logged on
     if 'username' not in login_session:
         return redirect('/login')
-
-    category = db_session.query(Category).filter_by(name=category_name).one()
-    editedItem = db_session.query(CategoryItem).filter(
-                            and_(CategoryItem.title == item_title,
-                                 CategoryItem.cat_id == category.id)).one()
+    # Retrieve Category and item objects, and redirecting if anyone not found
+    try:
+        category = db_session.query(Category).filter_by(
+                                name=category_name).one()
+        editedItem = db_session.query(CategoryItem).filter(
+                                and_(CategoryItem.title == item_title,
+                                     CategoryItem.cat_id == category.id)).one()
+    except NoResultFound:
+        flash('There went something wrong, item not found!')
+        return redirect(url_for('showCategories'))
+    # Checking user owning the category, if not redirecting
     if getUserId(login_session['email']) != editedItem.user_id:
-        flash('You are not authorized to edit this menu!')
+        flash('You are not authorized to edit this item!')
         return redirect(url_for('showItem',
                         category_name=category_name,
                         item_title=item_title))
     if request.method == 'POST':
+        # Assigning new values to Item
         if request.form['title']:
             editedItem.title = request.form['title']
         if request.form['description']:
@@ -468,13 +554,20 @@ def editItem(category_name, item_title):
             editedItem.cat_id = request.form['cat_id']
         db_session.add(editedItem)
         db_session.commit()
-        category = db_session.query(Category).filter_by(
-                    id=editedItem.cat_id).one()
+        # Retrieve the item new Category, and redirecting if anyone not found
+        try:
+            category = db_session.query(Category).filter_by(
+                        id=editedItem.cat_id).one()
+        except NoResultFound:
+            flash('There went something wrong' +
+                  ', the new category of the item not found!')
+            return redirect(url_for('showCategories'))
         flash('Category Item Successfully Edited')
         return redirect(url_for('showItem',
                         category_name=category.name,
                         item_title=editedItem.title))
     else:
+        # Using the newitem.html to edit the item
         categories = db_session.query(Category).order_by(
                                     asc(Category.name)).all()
         return render_template('newitem.html',
@@ -482,29 +575,39 @@ def editItem(category_name, item_title):
                                item=editedItem)
 
 
-# Delete a menu item
 @app.route('/catalog/<category_name>/item/<item_title>/delete',
            methods=['GET', 'POST'])
 def deleteItem(category_name, item_title):
+    """Delete a menu item
+    """
+    # Checking the user is logged on
     if 'username' not in login_session:
         return redirect('/login')
-    category = db_session.query(Category).filter_by(
-                    name=category_name).one()
-    itemToDelete = db_session.query(CategoryItem).filter(
+    # Retrieve Category and item objects, and redirecting if anyone not found
+    try:
+        category = db_session.query(Category).filter_by(
+                        name=category_name).one()
+        itemToDelete = db_session.query(CategoryItem).filter(
                         and_(CategoryItem.cat_id == category.id,
                              CategoryItem.title == item_title)).one()
+    except NoResultFound:
+        flash('There went something wrong, item not found!')
+        return redirect(url_for('showCategories'))
+    # Checking user owning the category, if not redirecting
     if getUserId(login_session['email']) != itemToDelete.user_id:
         flash('You are not authorized to delete this item!')
         return redirect(url_for('showItem',
                                 category_name=category_name,
                                 item_title=item_title))
     if request.method == 'POST':
+        # Deleting the item
         db_session.delete(itemToDelete)
         db_session.commit()
         flash('%s Item Successfully Deleted' % itemToDelete.title)
         return redirect(url_for('showCategories',
                                 category_name=category_name))
     else:
+        # Rendering the confirmation page
         return render_template('deleteitem.html',
                                category_name=category_name,
                                item_title=item_title)
