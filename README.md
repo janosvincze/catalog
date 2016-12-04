@@ -55,33 +55,55 @@
  3. Obtain OAuth 2.0 credentials from the [Google API Console](https://console.developers.google.com).
  Instructions on how to do can be found on [here](https://developers.google.com/identity/protocols/OAuth2).
  
- * Make a project
- * Go to Creditentals page
- * Choose OAuth client ID from "Create creditental" or use [this link](https://console.developers.google.com/apis/credentials/oauthclient)
- * Choose Web Application and click Create
- * Fill the form as in the [client_secret.json](https://github.com/janosvincze/catalog/blob/master/client_secrets.json)
- * After
- 
- 3. Clone this repo with:
+  * Make a project
+  * Go to Creditentals page
+  * Choose OAuth client ID from "Create creditental" or use [this link](https://console.developers.google.com/apis/credentials/oauthclient)
+  * Choose Web Application and click Create
+  * Fill the form as in the [client_secret.json](https://github.com/janosvincze/catalog/blob/master/client_secrets.json)
+  * After download the json file, and copy it the catalog directory as client_secret.json
+  * Copy Client ID to [/templates/login.html](https://github.com/janosvincze/catalog/blob/master/templates/login.html#L48):
+  
+    ```
+    <span class="g-signin"
+     data-scope="openid email"
+     <!-- Copy here your Google OAuth Client ID -->
+     data-clientid="the_place_of_your_google_oauth_client_id"
+     data-redirecturi="postmessage"
+     data-accesstype="offline"
+     data-cookiepolicy="single_host_origin"
+     data-callback="signInCallback"
+     data-approvalprompt="force">
+    </span>
+    ```
+    
+ 4. Obtain Facebook App ID from [Facebook for developers site](https://developers.facebook.com/apps/)
+   * Create a new App by clicking "Create new app" button
+   * Choose your app by clicking the app name
+   * Add Facebook Login (you can find it in new products) to your application
+   * Add login:5000/login and localhost:5000/fbconnect to "Valid OAuth redirect URIs"
+   * Copy the Facebook App ID to [fb_client_secret.json](https://github.com/janosvincze/catalog/blob/master/fb_client_secrets.json#L3)
+   * Copy the App Secret to [fb_client_secret.json](https://github.com/janosvincze/catalog/blob/master/fb_client_secrets.json#L4)
+   * Copy the App ID to (https://github.com/janosvincze/catalog/blob/master/templates/login.html#L112)
+   
+ 5. Database setup
+ Run [database_setup.py](https://github.com/janosvincze/catalog/blob/master/database_setup.py)
  
  ```
- git clone https://github.com/janosvincze/blog.git
+ # Go to catalog directory on the virtual machine 
+ cd /catalog
+ 
+ python database_setup.py
  ```
  
- 3. Install dependencies in the project's lib directory.
+ 6. Run the app
  
- ```
- cd blog
- pip install -r requirements.txt -t lib
- ```
- 
- 4. Run this project locally from the command line:
- 
- ```
- dev_appserver.py .
+  ```
+ python catalog.py
  ```
  
- Visit the application [http://localhost:8080](http://localhost:8080)
+ 7. Open [http://localhost:5000](http://localhost:5000) in a browser
+ 
+ 
  
 ## User's manual
 ### The link of the blog
