@@ -1,7 +1,7 @@
 # Catalog App
 ## Contents
-1. Install
-2. User's manual
+1. [Install](https://github.com/janosvincze/catalog/blob/master/README.md#install)
+2. [User's manual](https://github.com/janosvincze/catalog#users-manual)
   * Home page
   * Login page
   * After login
@@ -9,8 +9,8 @@
   * Create or edit an item
   * Create or edit a category
   * Deleting
-3. Developer's manual
-4. Sources
+3. [Developer's manual](https://github.com/janosvincze/catalog#developers-manual)
+4. [Sources](https://github.com/janosvincze/catalog#sources)
 
 ## Install
 ### Run Locally
