@@ -4,10 +4,10 @@
 2. User's manual
   * Home page
   * Login page
-  * Categories items page
+  * After login
   * Item page
-  * New item
-  * New category
+  * Create or edit an item
+  * Create or edit a category
   * Deleting
 3. Developer's manual
 4. Sources
@@ -93,6 +93,7 @@
  cd /catalog
  
  python database_setup.py
+ python fill_database.py
  ```
  
  6. Run the app
@@ -106,135 +107,92 @@
  
  
 ## User's manual
-### The link of the blog
-You can found the working blog at the following link:
-[http://engineapp-vj-blog.appspot.com/](https://engineapp-vj-blog.appspot.com/)
 ### Home page
-Before you signup and/or login, you can see the following layout: 
-![alt text][without_login_picture]
+Before you login, you can see the following layout: 
+![alt text][home_page_picture]
 
-If you do not have an acount, please use the [Signup](https://engineapp-vj-blog.appspot.com/signup) link on the navigation section to create a new one. Fill out the registration form. After successfully submitting it, you will be logged in.
+Without login, you can see all the categories and the latest items. Choose (click) a category to see its items.
+You can see an item description by clicking its title.
 
-If you already have an acount, please use [Login](https://engineapp-vj-blog.appspot.com/login) link on the navigation section. 
-Use the login form as appropriate.
+You can login with your Google or Facebook acount.
+
+### Login
+You can login with your Google or Facebook acount. You should approve that website access your basic data, such as e-mail address and your name.
+![alt text][login_picture]
 
 ### After login
-After you succesfully login, you can see the following layout:
-![alt text][after_login_picture]
 
-After logging in, you can:
-  * Create a New post
-  * Edit your own posts
-  * Delete your own posts
+ After logging in, you can:
+  * Create a New category
+  * Create a New Item
+  * Edit your own categories and items
+  * Delete your own categories and items
 
-Just following the link as it shown above.
+![alt text][logged_home_page_picture]
 
-### A post's page
+### Item page
 
-Click a post's title to reach its page.
-![alt text][post_page_picture]
+In the item page you can see the item's description. If your own the item, you can edit or delete the item clicking the links under the description.
 
-You can add a new comment. Fill the blank text area and click the submit button.
+![alt text][item_page_picture]
+
+### Create or edit an item
+
+To add a new item, click the "Add new item" link on the home page after you login.
+To edit an item you own, go to the item page and click the "Edit" link.
+
+![alt text][edit_item_picture]
+
+Fill the form and click "Create"/"Update" button.
+
+### Create or edit a category
+
+To add a new category, click the "Add new category" link on the home page after you login.
+To edit a category you own, go to the home page and click the "Edit" link of the category.
+
+![alt text][new_category_picture]
+
+Add or edit the name of the category, and click "Create"/"Update" button to save it.
+
+### Deleting
+
+To delete a category you own, go to home page and click the "Delete" link of the category.
+To delete an item you own, go to the item page and click the "Delete" link.
+
+![alt text][deleting_confirmation]
+
+You should confirm that you really want to delete the category or the item.
+
 
 ## Developer's manual
 
 ### Used technology
-  * Google App Engine
-  * Google Cloud Datastore
   * Python
-  * Jinja
+  * Flask
+  * SqlAlchemy
   * Html
   * CSS
 
 ### Structure
 
-The main python file: [main.py](https://github.com/janosvincze/blog/blob/master/main.py)
-The templates files: [templates](https://github.com/janosvincze/blog/tree/master/templates)
+The main python file: [catalog.py](https://github.com/janosvincze/catalog/blob/master/catalog.py)
+Database setup file: [database_setup.py](https://github.com/janosvincze/catalog/blob/master/database_setup.py)
+Test data: [fill_database.py](https://github.com/janosvincze/catalog/blob/master/fill_database.py)
+The templates files: [templates](https://github.com/janosvincze/catalog/tree/master/templates)
+
 
 ### Classes, entities
 
 #### [BlogHandler](https://github.com/janosvincze/blog/blob/master/main.py#L59)
 To rendering templates with passing user. Setting, reading cookies to identify users.
 
-#### [MainPage](https://github.com/janosvincze/blog/blob/master/main.py#L102)
-To rendering templates with passing user. Setting, reading cookies to identify users.
-
-#### [User class](https://github.com/janosvincze/blog/blob/master/main.py#L134)
-Storing users' name, password's hash and email address.
-
-#### [Post class](https://github.com/janosvincze/blog/blob/master/main.py#L170)
-Storing posts' title, content, creation time, author (refering to User entity) and comments counter.
-
-Adding **[author_user](https://github.com/janosvincze/blog/blob/master/main.py#L184)** function to retrieve the post's author (refering to User entity).<br>Adding **[render](https://github.com/janosvincze/blog/blob/master/main.py#L188)** function to render the post entity with author's name to display.
-
-#### [Comment class](https://github.com/janosvincze/blog/blob/master/main.py#L217)
-Storing comments' content, creation time and author (refering to User entity).
-
-Adding **[author_user](https://github.com/janosvincze/blog/blob/master/main.py#L230)** function to retrieve the comment's author (refering to User entity).<br>Adding **[render](https://github.com/janosvincze/blog/blob/master/main.py#L234)** function to render the comment entity to display.
-
-#### [Like class](https://github.com/janosvincze/blog/blob/master/main.py#L249)
-Storing post's likes.
-
-#### [PostPage](https://github.com/janosvincze/blog/blob/master/main.py#L282)
-To display a post with comments and a new comment form if user's logged in.
-
-
-#### [NewPost](https://github.com/janosvincze/blog/blob/master/main.py#L332)
-
-  [get](https://github.com/janosvincze/blog/blob/master/main.py#L333) function:
-  Displaying post form with existing content if there is a given post_id parameter, or a blank form if there is no post_id parameter.
-  
-  [post](https://github.com/janosvincze/blog/blob/master/main.py#L350) function:
-  Update post if there is a valid post_id parameter, otherwise insert a new one.
- 
- 
-#### [DeletePost](https://github.com/janosvincze/blog/blob/master/main.py#L386)
-  [get](https://github.com/janosvincze/blog/blob/master/main.py#L387) function:
-  Checking that user is the author of the post and displaying a confirmation form.
-  
-  [post](https://github.com/janosvincze/blog/blob/master/main.py#L410) function:
-  Checking that user is the author of the post and he/she is, delete the post.
-  
-#### [NewComment](https://github.com/janosvincze/blog/blob/master/main.py#L539)
-Add a new comment to the post, and increase post's comment counter.
-  
-#### [DeleteComment](https://github.com/janosvincze/blog/blob/master/main.py#L431)
-Delete a comment.
-
-#### [EditComment](https://github.com/janosvincze/blog/blob/master/main.py#L484)
-Edit a comment.
-
-#### [NewLike](https://github.com/janosvincze/blog/blob/master/main.py#L574)
-Add a new like to the post, and increase post's like counter.
-  
-#### [DeleteLike](https://github.com/janosvincze/blog/blob/master/main.py#L615)
-Delete a like.
-
-#### [Signup](https://github.com/janosvincze/blog/blob/master/main.py#L644)
-Handling user signup.
-
-#### [Register](https://github.com/janosvincze/blog/blob/master/main.py#L682)
-Handling user signup.
-
-
-#### [Login](https://github.com/janosvincze/blog/blob/master/main.py#L700)
-Handling user login.
-
-
-#### [Logout](https://github.com/janosvincze/blog/blob/master/main.py#L721)
-Handling user login.
-
-
-#### [Welcome](https://github.com/janosvincze/blog/blob/master/main.py#L730)
-New user welome.
-
-
-#### [ErrorPage](https://github.com/janosvincze/blog/blob/master/main.py#L741)
-Displaying error messages. Error **code** pass through to template [blog_error.html](https://github.com/janosvincze/blog/blob/master/templates/blog_error.html), which cointaing the real message to display.
-
 ## Sources
   * Udacity Full Stack nanodegree
 
-[without_login_picture]: https://github.com/janosvincze/blog/blob/master/screenshots/without_login.png "Home page"
-[after_login_picture]: https://github.com/janosvincze/blog/blob/master/screenshots/base.png "Home page after login"
-[post_page_picture]: https://github.com/janosvincze/blog/blob/master/screenshots/post.png "A post's page"
+[home_page_picture]: https://github.com/janosvincze/catalog/blob/master/screenshot/homepage.png "Home page"
+[login_picture]: https://github.com/janosvincze/catalog/blob/master/screenshot/Login.png "Login page"
+[logged_home_page_picture]: https://github.com/janosvincze/catalog/blob/master/screenshot/logged_homepage.png "After login"
+[item_page_picture]: https://github.com/janosvincze/catalog/blob/master/screenshot/item.png "An item's page"
+[edit_item_picture]: https://github.com/janosvincze/catalog/blob/master/screenshot/edit_item.png "Editing an item"
+[new_category_picture]: https://github.com/janosvincze/catalog/blob/master/screenshot/new_category.png "Create a new category"
+[deleting_confirmation]: https://github.com/janosvincze/catalog/blob/master/screenshot/confirm_deleting.png "Deleting a category"
