@@ -184,7 +184,74 @@ Test data: [fill_database.py](https://github.com/janosvincze/catalog/blob/master
 The templates files: [templates](https://github.com/janosvincze/catalog/tree/master/templates)
 
 
-### Classes, entities
+### Database
+
+Database's tables definition can be found in [database_setup.py](https://github.com/janosvincze/catalog/blob/master/database_setup.py) Using SQLite via SQLAlchemy.
+
+#### User
+To store users' data: email address, name, id as primary key.
+
+#### Category
+To store data of categories: name, id as primary key and the creator/owner user_id.
+Functions to serialize data:
+ * serialize
+ * serialize_items
+ 
+#### CategoryItem
+To store data of items: title, description, id as primary key, the creator/owner user_id and their category id.
+Function to serialize data: serialize
+
+### Catalog.py
+
+#### Handling users
+
+ * def createUser(login_session)
+ 
+ To create a user in the database from login session, and return its ID.
+ * def getUserId(email)
+ 
+ To return user's ID from an email address.
+ * def getUserInfo(user_id)
+ 
+ To return User object from an user_id.
+
+#### Login/logout
+
+ * showLogin()
+ 
+ To render the login page
+ 
+ * fbconnect()
+ 
+ To login user via Facebook OAuth service. For details, please see the installing section.
+ 
+ * fbdisconnect()
+ 
+ To logout the user, who connected via Facebook OAuth.
+ 
+ * gconnect()
+ 
+ To login user via Google OAuth service. For details, please see the installing section.
+ 
+ * gdisconnect()
+ 
+ To logout the user, who connected via Google OAuth.
+ 
+ * disconnect()
+ 
+ To handle users logout.
+ 
+#### Retrieving all data in JSON format
+ * CatalogJSON()
+ Using jsonify function, to return all the categories and their items in one JSON file.
+ In the database I have defined "items" relationship to use it in serializing.
+ 
+ ```
+ items = relationship("CategoryItem", back_populates="category")
+ ...
+ def serialize_items(self):
+      return [ item.serialize for item in self.items]
+ ```
 
 #### [BlogHandler](https://github.com/janosvincze/blog/blob/master/main.py#L59)
 To rendering templates with passing user. Setting, reading cookies to identify users.
