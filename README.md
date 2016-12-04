@@ -176,8 +176,11 @@ You should confirm that you really want to delete the category or the item.
 ### Structure
 
 The main python file: [catalog.py](https://github.com/janosvincze/catalog/blob/master/catalog.py)
+
 Database setup file: [database_setup.py](https://github.com/janosvincze/catalog/blob/master/database_setup.py)
+
 Test data: [fill_database.py](https://github.com/janosvincze/catalog/blob/master/fill_database.py)
+
 The templates files: [templates](https://github.com/janosvincze/catalog/tree/master/templates)
 
 
