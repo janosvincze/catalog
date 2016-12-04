@@ -253,6 +253,44 @@ Function to serialize data: serialize
       return [ item.serialize for item in self.items]
  ```
 
+#### Home Page
+ * showCategories()
+ Rendering home page after retriving categories and the last ten items from the database:
+ 
+ ```
+    categories = db_session.query(Category).order_by(asc(Category.name))
+    last_items = db_session.query(CategoryItem).order_by(
+                    desc(CategoryItem.id)).limit(10)
+    return render_template('categories.html',
+                           categories=categories,
+                           items=last_items)
+ ```
+ 
+#### Handling categories: create, edit and delete
+ * newCategory()
+ Creating a new category. After checking user is logged in, if the request is GET, rendering the creating category page.
+ If the request is POST, creating a Category from request.form data.
+ 
+ ```
+ def newCategory():
+    # Checking the user is logged on
+    if 'username' not in login_session:
+        return redirect('/login')
+    # If the request is a POST create a new category
+    if request.method == 'POST':
+        newCategory = Category(name=request.form['name'],
+                               user_id=getUserId(login_session['email']))
+        db_session.add(newCategory)
+        # Add a new flash line to info
+        flash('New Category %s Successfully Created' % newCategory.name)
+        db_session.commit()
+        return redirect(url_for('showCategories'))
+    else:
+        return render_template('newcategory.html')
+ ```
+ 
+ * editCategory(category_name)
+ 
 #### [BlogHandler](https://github.com/janosvincze/blog/blob/master/main.py#L59)
 To rendering templates with passing user. Setting, reading cookies to identify users.
 
