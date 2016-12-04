@@ -1,6 +1,6 @@
 # Catalog App
 ## Contents
-1. [Install](https://github.com/janosvincze/catalog/blob/master/README.md#install)
+1. [Install](#install)
 2. [User's manual](https://github.com/janosvincze/catalog#users-manual)
   * Home page
   * Login page
