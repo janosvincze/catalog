@@ -61,7 +61,7 @@
   * Choose Web Application and click Create
   * Fill the form as in the [client_secret.json](https://github.com/janosvincze/catalog/blob/master/client_secrets.json)
   * After download the json file, and copy it the catalog directory as client_secret.json
-  * Copy Client ID to [/templates/login.html](https://github.com/janosvincze/catalog/blob/master/templates/login.html#L48):
+  * Copy Client ID to [login.html](https://github.com/janosvincze/catalog/blob/master/templates/login.html#L48):
   
     ```
     <span class="g-signin"
