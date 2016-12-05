@@ -96,13 +96,22 @@
  python fill_database.py
  ```
  
- 6. Run the app
+ 6. Change app.secret_key
+ To use Flask session safely, you should set app.secret_key.
+ Use a random key!
+ 
+ ```
+ # This is not a safe secret key!
+  app.secret_key = 'super_secret_key'
+ ```
+ 
+ 7. Run the app
  
   ```
  python catalog.py
  ```
  
- 7. Open [http://localhost:5000](http://localhost:5000) in a browser
+ 8. Open [http://localhost:5000](http://localhost:5000) in a browser
  
  
  
@@ -281,7 +290,7 @@ Function to serialize data: serialize
         newCategory = Category(name=request.form['name'],
                                user_id=getUserId(login_session['email']))
         db_session.add(newCategory)
-        # Add a new flash line to info
+        # Add a new flash line to inform the user
         flash('New Category %s Successfully Created' % newCategory.name)
         db_session.commit()
         return redirect(url_for('showCategories'))
@@ -290,12 +299,109 @@ Function to serialize data: serialize
  ```
  
  * editCategory(category_name)
+ Editing a category
  
-#### [BlogHandler](https://github.com/janosvincze/blog/blob/master/main.py#L59)
-To rendering templates with passing user. Setting, reading cookies to identify users.
-
+ ```
+ @app.route('/catalog/edit/<category_name>', methods=['GET', 'POST'])
+ def editCategory(category_name):
+    """Edit a category
+    """
+    # Checking the user is logged on
+    if 'username' not in login_session:
+        return redirect('/login')
+    # Retrieve Category object, and redirecting if not found
+    try:
+        editedCategory = db_session.query(Category).filter_by(
+                            name=category_name).one()
+    except NoResultFound:
+        flash('There went something wrong' +
+              ', %s category not exits!' % category_name)
+        return redirect(url_for('showCategories'))
+    # Checking user owning the category, if not redirecting
+    if getUserId(login_session['email']) != editedCategory.user_id:
+        # Informing the user
+        flash('You are not authorized to edit!')
+        return redirect(url_for('showCategories'))
+    if request.method == 'POST':
+        # Assigning the new name value to the category
+        if request.form['name']:
+            editedCategory.name = request.form['name']
+            # Informing the user that editing was succesfull
+            flash('Category Successfully Edited %s' % editedCategory.name)
+            return redirect(url_for('showCategories'))
+    else:
+        # Using the newcategory.html to edit the category passing category to fill the form
+        return render_template('newcategory.html', category=editedCategory)
+ ```
+   
+ * def deleteCategory(category_name)
+ Deleting a category.
+ 
+ ```
+    # Find the category to delete
+    categoryToDelete = db_session.query(Category).filter_by(
+                        name=category_name).one()
+    
+    ...
+    
+    if request.method == 'POST':
+        # Deleting the category from the database
+        db_session.delete(categoryToDelete)
+        # Informing the user that deleting was successfull
+        flash('%s Successfully Deleted' % categoryToDelete.name)
+        # Commit the deleting
+        db_session.commit()
+        # Redirecting to the home page
+        return redirect(url_for('showCategories'))
+    else:
+        # Rendering the confirmation page
+        return render_template('deletecategory.html',
+                               category=categoryToDelete)
+ ```
+ 
+#### Handling items: show, create, edit and delete
+ * showCategoryItems(category_name)
+ Show the items of a category
+ 
+ * showItem(category_name, item_title)
+ Show the given item.
+ 
+ * newItem()
+ Create a new item.
+ 
+ ```
+    # Search the choosen category
+    cat = db_session.query(Category).filter_by(
+                           id=request.form['cat_id']).one()
+    # Create a new item. Using getUserId to retrieve the id of the user from login_session
+    newItem = CategoryItem(title=request.form['title'],
+                           description=request.form['description'],
+                           cat_id=request.form['cat_id'],
+                           category=cat,
+                           user_id=getUserId(login_session['email']))
+    # Insert the new item to the database 
+    db_session.add(newItem)
+ ```
+ 
+ * editItem(category_name, item_title)
+ Edit an item.
+ 
+ ```
+  # Redirecting after updating the database with the new values
+  # keeping in mind that the category and the title of the item maybe changed
+  return redirect(url_for('showItem',
+                          category_name=category.name,
+                          item_title=editedItem.title))
+ ```
+ 
+ * deleteItem(category_name, item_title)
+ Deleting an item after confirmation.
+ 
+ 
 ## Sources
   * Udacity Full Stack nanodegree
+  * Facebook For Developers: [Facebook Login for the Web with the JavaScript SDK](https://developers.facebook.com/docs/facebook-login/web)
+  * Google Guides: [Using OAuth 2.0 for Web Server Applications](https://developers.google.com/identity/protocols/OAuth2WebServer)
 
 [home_page_picture]: https://github.com/janosvincze/catalog/blob/master/screenshot/homepage.png "Home page"
 [login_picture]: https://github.com/janosvincze/catalog/blob/master/screenshot/Login.png "Login page"
