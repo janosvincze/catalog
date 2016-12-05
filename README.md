@@ -333,6 +333,30 @@ Function to serialize data: serialize
         # Using the newcategory.html to edit the category passing category to fill the form
         return render_template('newcategory.html', category=editedCategory)
  ```
+ 
+ Using the [newcategory.html](https://github.com/janosvincze/catalog/blob/master/templates/newcategory.html) to edit category.
+ If category is defined, means it is an update:
+ 
+ ```
+  <div class="col-md-11 padding-small">
+     <h1>
+         {% if (category is defined) %}
+                Edit Category
+         {% else %}
+                New Category
+         {% endif %}
+     </h1>
+  </div>
+  
+  ...
+  
+  <input type ="text" class="form-control" maxlength="100"
+         name="name"
+         {% if category is defined %}
+                value="{{category.name}}"
+         {% endif %}
+         >
+ ```
    
  * def deleteCategory(category_name)
  Deleting a category.
@@ -393,6 +417,31 @@ Function to serialize data: serialize
                           category_name=category.name,
                           item_title=editedItem.title))
  ```
+ 
+ Using the [newitem.html](https://github.com/janosvincze/catalog/blob/master/templates/newitem.html) to edit the item.
+ If item is defined, means it is an update:
+ 
+ ```
+  <div class="col-md-11 padding-small">
+     <h1>
+         {% if (item is defined) %}
+                Edit Category
+         {% else %}
+                New Category
+         {% endif %}
+     </h1>
+  </div>
+  
+  ...
+  
+  <input type ="text" class="form-control" maxlength="100"
+         name="title"
+         {% if item is defined %}
+                value="{{item.title}}"
+         {% endif %}
+         >
+ ```
+ 
  
  * deleteItem(category_name, item_title)
  Deleting an item after confirmation.
