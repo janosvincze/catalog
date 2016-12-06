@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect
 from flask import jsonify, url_for, flash
 from flask import session as login_session
 from flask import make_response
+from functools import wraps
 
 from sqlalchemy import create_engine, asc, desc, and_
 from sqlalchemy.orm import sessionmaker
@@ -73,6 +74,18 @@ def getUserInfo(user_id):
         return user
     except:
         return None
+
+def login_required(f):
+    """Checking if user is logged in
+    """
+    @wraps(f)
+    def logged_in_checker(*args, **kwargs):
+        if 'email' in login_session:
+            return f(*args, **kwargs)
+        else:
+            flash("You are not allowed to access there")
+            return redirect('/login')
+    return logged_in_checker
 
 
 @app.route('/clearSession')
@@ -353,6 +366,34 @@ def CatalogJSON():
     category = db_session.query(Category).all()
     return jsonify(categories=[cat.serialize for cat in category])
 
+@app.route('/catalog/<category_name>/items.json')
+def CategoryItemJSON(category_name):
+    """Generating json file containing the category and their items
+    """
+    try:
+        category = db_session.query(Category).filter_by(
+                            name=category_name).one()
+    except NoResultFound:
+        flash('There went something wrong' +
+              ', %s category not exits!' % category_name)
+        return redirect(url_for('showCategories'))
+    return jsonify(category=category.serialize)
+
+@app.route('/catalog/<category_name>/item/<item_title>.json')
+def ItemJSON(category_name, item_title):
+    """Generating json file containing the item
+    """
+    try:
+        category = db_session.query(Category).filter_by(
+                                name=category_name).one()
+        item = db_session.query(CategoryItem).filter(
+                            and_(CategoryItem.title == item_title,
+                                 CategoryItem.cat_id == category.id)).one()
+    except NoResultFound:
+        flash('There went something wrong, cannot display your request!')
+        return redirect(url_for('showCategories'))
+    return jsonify(item=item.serialize)
+
 
 @app.route('/')
 @app.route('/catalog/')
@@ -368,12 +409,10 @@ def showCategories():
 
 
 @app.route('/catalog/new/', methods=['GET', 'POST'])
+@login_required
 def newCategory():
     """Create a new category
     """
-    # Checking the user is logged on
-    if 'username' not in login_session:
-        return redirect('/login')
     if request.method == 'POST':
         newCategory = Category(name=request.form['name'],
                                user_id=getUserId(login_session['email']))
@@ -386,12 +425,10 @@ def newCategory():
 
 
 @app.route('/catalog/edit/<category_name>', methods=['GET', 'POST'])
+@login_required
 def editCategory(category_name):
     """Edit a category
     """
-    # Checking the user is logged on
-    if 'username' not in login_session:
-        return redirect('/login')
     # Retrieve Category object, and redirecting if not found
     try:
         editedCategory = db_session.query(Category).filter_by(
@@ -416,12 +453,10 @@ def editCategory(category_name):
 
 
 @app.route('/catalog/<category_name>/delete/', methods=['GET', 'POST'])
+@login_required
 def deleteCategory(category_name):
     """Delete a category
     """
-    # Checking the user is logged on
-    if 'username' not in login_session:
-        return redirect('/login')
     # Retrieve Category object, and redirecting if not found
     try:
         categoryToDelete = db_session.query(Category).filter_by(
@@ -496,12 +531,10 @@ def showItem(category_name, item_title):
 
 
 @app.route('/catalog/new_item/', methods=['GET', 'POST'])
+@login_required
 def newItem():
     """Create a new category item
     """
-    # Checking the user is logged on
-    if 'username' not in login_session:
-        return redirect('/login')
     categories = db_session.query(Category).order_by(asc(Category.name)).all()
     if request.method == 'POST':
         # Creating the new Item
@@ -522,12 +555,10 @@ def newItem():
 
 @app.route('/catalog/<category_name>/item/<item_title>/edit',
            methods=['GET', 'POST'])
+@login_required
 def editItem(category_name, item_title):
     """Edit a menu item
     """
-    # Checking the user is logged on
-    if 'username' not in login_session:
-        return redirect('/login')
     # Retrieve Category and item objects, and redirecting if anyone not found
     try:
         category = db_session.query(Category).filter_by(
@@ -577,12 +608,10 @@ def editItem(category_name, item_title):
 
 @app.route('/catalog/<category_name>/item/<item_title>/delete',
            methods=['GET', 'POST'])
+@login_required
 def deleteItem(category_name, item_title):
     """Delete a menu item
     """
-    # Checking the user is logged on
-    if 'username' not in login_session:
-        return redirect('/login')
     # Retrieve Category and item objects, and redirecting if anyone not found
     try:
         category = db_session.query(Category).filter_by(

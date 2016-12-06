@@ -29,6 +29,23 @@
       </div>
       <div class="col-md-1"></div>
     </div>
+    <div class="row">
+        <div class="col-md-1"></div>
+        <div class = 'col-md-10 flash'>
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+
+                <ul>
+                {% for message in messages %}
+                    <li> <strong> {{ message }} </strong> </li>
+                {% endfor %}
+                </ul>
+                {% endif %}
+            {% endwith %}
+
+        </div>
+        <div class="col-md-1"></div>
+    </div>
 
     <div class="row">
       <div class="col-md-1"></div>
@@ -44,8 +61,7 @@
         <div id="signInButton">
           <span class="g-signin"
             data-scope="openid email"
-            <!-- Copy here your Google OAuth Client ID -->
-            data-clientid=""
+            data-clientid="927750146445-biv143p8qc1m0q83ecmeh5tbe2vj7i8s.apps.googleusercontent.com"
             data-redirecturi="postmessage"
             data-accesstype="offline"
             data-cookiepolicy="single_host_origin"
@@ -109,7 +125,7 @@ function signInCallback(authResult) {
 <script>
   window.fbAsyncInit = function() {
   FB.init({
-    appId      : '',
+    appId      : '1113453305439779',
     cookie     : true,  // enable cookies to allow the server to access
                         // the session
     xfbml      : true,  // parse social plugins on this page
