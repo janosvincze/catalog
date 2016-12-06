@@ -250,7 +250,31 @@ Function to serialize data: serialize
  
  To handle users logout.
  
-#### Retrieving all data in JSON format
+#### Login Required Decorator
+ A decorator function to check user is logged in. If not it redirect to the login page:
+ 
+ ```
+ def login_required(f):
+    @wraps(f)
+    def logged_in_checker(*args, **kwargs):
+        if 'email' in login_session:
+            return f(*args, **kwargs)
+        else:
+            flash("You are not allowed to access there")
+            return redirect('/login')
+    return logged_in_checker
+ ```
+ 
+ In use:
+ ```
+ # Check the user logged in
+ @app.route('/catalog/new/', methods=['GET', 'POST'])
+ @login_required
+ def newCategory():
+ ```
+
+ 
+#### Retrieving data in JSON format
  * CatalogJSON()
  Using jsonify function, to return all the categories and their items in one JSON file.
  In the database I have defined "items" relationship to use it in serializing.
@@ -261,6 +285,15 @@ Function to serialize data: serialize
  def serialize_items(self):
       return [ item.serialize for item in self.items]
  ```
+ * CategoryItemJSON(category_name)
+ 
+ To retrieve the categories (with category_name) data, including their items in JSON format at the
+ ```/catalog/<category_name>/items.json``` endpoint.
+ 
+ * ItemJSON(category_name, item_title)
+ 
+ To retrieve the item's data in JSON format at the
+ ```/catalog/<category_name>/item/<item_title>.json``` endpoint.
 
 #### Home Page
  * showCategories()
@@ -281,10 +314,8 @@ Function to serialize data: serialize
  If the request is POST, creating a Category from request.form data.
  
  ```
+ @login_required
  def newCategory():
-    # Checking the user is logged on
-    if 'username' not in login_session:
-        return redirect('/login')
     # If the request is a POST create a new category
     if request.method == 'POST':
         newCategory = Category(name=request.form['name'],
@@ -303,12 +334,10 @@ Function to serialize data: serialize
  
  ```
  @app.route('/catalog/edit/<category_name>', methods=['GET', 'POST'])
+ @login_required
  def editCategory(category_name):
     """Edit a category
     """
-    # Checking the user is logged on
-    if 'username' not in login_session:
-        return redirect('/login')
     # Retrieve Category object, and redirecting if not found
     try:
         editedCategory = db_session.query(Category).filter_by(
@@ -451,6 +480,8 @@ Function to serialize data: serialize
   * Udacity Full Stack nanodegree
   * Facebook For Developers: [Facebook Login for the Web with the JavaScript SDK](https://developers.facebook.com/docs/facebook-login/web)
   * Google Guides: [Using OAuth 2.0 for Web Server Applications](https://developers.google.com/identity/protocols/OAuth2WebServer)
+  * [Flask Documentation](http://flask.pocoo.org/docs/0.10/)
+  * Udacity Reviewer - Thanks ;-)
 
 [home_page_picture]: https://github.com/janosvincze/catalog/blob/master/screenshot/homepage.png "Home page"
 [login_picture]: https://github.com/janosvincze/catalog/blob/master/screenshot/Login.png "Login page"
